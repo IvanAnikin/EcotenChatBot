@@ -17,13 +17,14 @@ tools = [
     wikidata_tool,
     celesta_tool,
     rag_tool,
-    python_interpreter_tool,  # Add the Python interpreter tool
+    python_interpreter_tool, 
 ]
 agent = initialize_agent(
     tools,
     llm,
     agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
     verbose=True,
+    handle_parsing_errors=True,
 )
 
 
