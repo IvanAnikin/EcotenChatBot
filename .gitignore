@@ -1,0 +1,4 @@
+.DS_Store
+.chroma_store/
+.vscode/
+__pycache__/
