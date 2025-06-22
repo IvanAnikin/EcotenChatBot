@@ -15,11 +15,12 @@ from api_fetchers import (
     get_wikidata_summary,
     get_celesta_data
 )
+from dotenv import load_dotenv
 
-
+load_dotenv("config.env")
 app = Flask(__name__)
 
-theKey = "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"
+theKey = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=theKey)
 
 vs = load_vectorstore(theKey)
@@ -64,7 +65,7 @@ def chat():
             city = "Prague"
             indicator = "evi"
             years = None
-        context = get_celesta_data(city, indicator, years=years, username="ivan", password="Ivan12345")
+        context = get_celesta_data(city, indicator, years=years, username=os.getenv("CELESTA_USERNAME"), password=os.getenv("CELESTA_PASSWORD"))
     else:
         context = "No relevant API fetcher for this question."
 

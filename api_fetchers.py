@@ -1,11 +1,13 @@
 import os
 import requests
 import string
+from dotenv import load_dotenv
+load_dotenv("config.env")
 
 
 def get_weather(location="Prague"):
-    response = requests.get(f"https://api.weatherapi.com/v1/current.json",
-                            params={"q": location, "key": "5ec32a5beaa94777b66122207251906"})
+    response = requests.get("https://api.weatherapi.com/v1/current.json",
+                            params={"q": location, "key": os.getenv("WEATHER_API_KEY")})
     data = response.json()
     print(data)
     return data
@@ -44,14 +46,13 @@ def get_wikidata_summary(query: str) -> str:
                     label = entity_data['entities'][entity_id]['labels']['en']['value']
                     print(f"{label}: {description}")
                     return f"{label}: {description}"
-                except Exception as e:
+                except Exception:
                     return f"Wikidata entry: {entity_url} (no English description found)"
             else:
                 return f"Wikidata entry: {entity_url} (failed to fetch entity data)"
     return "No relevant Wikidata info."
 
 def get_celesta_data(city, indicator, years=None, download=False, username=None, password=None):
-    import requests
     base_url = "http://35.159.169.103:8000/data"
     params = {
         "city": city,

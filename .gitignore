@@ -2,3 +2,4 @@
 .chroma_store/
 .vscode/
 __pycache__/
+config.env
