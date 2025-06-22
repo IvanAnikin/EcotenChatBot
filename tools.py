@@ -3,6 +3,8 @@ import re
 import requests
 import string
 import json
+import io
+import contextlib
 from dotenv import load_dotenv
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import OpenAIEmbeddings
@@ -136,6 +138,18 @@ def get_and_clear_tool_log():
     GLOBAL_TOOL_LOG = []
     return log
 
+def python_interpreter_tool_func(code: str):
+    output = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(output):
+            exec(code, globals())
+        result = output.getvalue()
+    except Exception as e:
+        result = f"Error: {e}"
+    log_tool_result("python_interpreter", code, result)
+    return result
+
+
 
 rag_tool = Tool(
     name="DocumentRAG",
@@ -162,4 +176,13 @@ celesta_tool = Tool(
     func=celesta_tool_func,
     description="Get geographical data from the Celesta API. Input should specify city and indicator.",
 )
-
+python_interpreter_tool = Tool(
+    name="PythonInterpreter",
+    func=lambda code: python_interpreter_tool_func(code),
+    description=(
+        "Executes Python code. "
+        "Input must be a valid Python code string (not just an expression or value). "
+        "Always use print() to output results, e.g., 'print(2+2)'. "
+        "Use for calculations, data analysis, or code-based reasoning."
+    )
+)

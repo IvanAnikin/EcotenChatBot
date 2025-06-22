@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain.tools import Tool
 from langchain.agents import initialize_agent, AgentType
-from tools import weather_tool, place_tool, wikidata_tool, celesta_tool, rag_tool, get_and_clear_tool_log
+from tools import weather_tool, place_tool, wikidata_tool, celesta_tool, rag_tool, get_and_clear_tool_log, python_interpreter_tool
 import json
 
 load_dotenv("config.env")
@@ -17,6 +17,7 @@ tools = [
     wikidata_tool,
     celesta_tool,
     rag_tool,
+    python_interpreter_tool,  # Add the Python interpreter tool
 ]
 agent = initialize_agent(
     tools,
