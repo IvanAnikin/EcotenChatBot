@@ -5,25 +5,27 @@
     <style>
         body { font-family: Arial; margin: 40px; }
         #response { margin-top: 20px; white-space: pre-wrap; }
+        #context { margin-top:10px; color: #555; font-size: 0.95em; white-space: pre-wrap; }
         input, button { padding: 10px; font-size: 16px; }
+        .json-key { color: #922; }
+        .json-value { color: #080; }
+        .json-string { color: #048; }
+        .json-toggle { cursor: pointer; color: #00a; }
+        .json-collapsed > .json-children { display: none; }
+        .json-table { font-family: monospace; font-size: 0.97em; }
     </style>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-jsonview/1.2.3/jquery.jsonview.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-jsonview/1.2.3/jquery.jsonview.min.js"></script>
 </head>
 <body>
     <h1>GeoChatbot 💬</h1>
     <input type="text" id="question" placeholder="Ask a question..." size="50" />
     <button onclick="send()">Send</button>
     <div id="response"></div>
-    <div id="context" style="margin-top:10px; color: #555; font-size: 0.95em;"></div>
-    <div id="json-context" style="margin-top:10px;"></div>
+    <div id="context"></div>
     <script>
         function send() {
             const question = document.getElementById("question").value;
             document.getElementById("response").innerText = "Thinking...";
             document.getElementById("context").innerText = "";
-            document.getElementById("json-context").innerHTML = "";
             fetch("/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -32,13 +34,49 @@
             .then(res => res.json())
             .then(data => {
                 document.getElementById("response").innerText = data.answer;
-                if (typeof data.context === 'object') {
-                    document.getElementById("context").innerText = 'Context used:';
-                    $("#json-context").JSONView(data.context, { collapsed: false });
+                if (data.context) {
+                    renderJSON(document.getElementById("context"), JSON.parse(data.context));
                 } else {
-                    document.getElementById("context").innerText = data.context ? `Context used:\n${data.context}` : '';
+                    document.getElementById("context").innerText = '';
                 }
             });
+        }
+
+        // Minimal interactive JSON viewer
+        function renderJSON(container, obj) {
+            container.innerHTML = '<b>Agent tool log:</b>';
+            container.appendChild(jsonToHTML(obj));
+        }
+        function jsonToHTML(obj) {
+            if (typeof obj !== 'object' || obj === null) {
+                const span = document.createElement('span');
+                span.className = typeof obj === 'string' ? 'json-string' : 'json-value';
+                span.textContent = JSON.stringify(obj);
+                return span;
+            }
+            if (Array.isArray(obj)) {
+                const div = document.createElement('div');
+                div.className = 'json-table';
+                obj.forEach((item, i) => {
+                    const row = document.createElement('div');
+                    row.appendChild(document.createTextNode(i + ': '));
+                    row.appendChild(jsonToHTML(item));
+                    div.appendChild(row);
+                });
+                return div;
+            }
+            const wrapper = document.createElement('div');
+            wrapper.className = 'json-table';
+            Object.keys(obj).forEach(key => {
+                const row = document.createElement('div');
+                const keySpan = document.createElement('span');
+                keySpan.className = 'json-key';
+                keySpan.textContent = key + ': ';
+                row.appendChild(keySpan);
+                row.appendChild(jsonToHTML(obj[key]));
+                wrapper.appendChild(row);
+            });
+            return wrapper;
         }
     </script>
 </body>
